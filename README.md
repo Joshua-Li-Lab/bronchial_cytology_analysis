@@ -10,8 +10,7 @@ The pipeline expects input data in Excel format (.xlsx). The data should include
 - **Admission Date (yyyy-mm-dd)**: Admission date in YYYY-MM-DD format.
 - **Lab Result Columns** (floats, may include NaN): e.g., APTT_Result, Albumin_Result, Basophil, absolute_Result, C-Reactive Protein_Result, etc.
 - **Flagging Columns** (strings: 'H', 'L', or blank/NaN): e.g., APTT_Flagging, Albumin_Flagging, etc. (indicating high/low/normal).
-- **Lung cancer**: Target outcome (int: 0 or 1; or possibly 2, which is merged to 1 in preprocessing).
-- **Other Columns**: May include "Unnamed: 1" for categories like 'C3' or 'C4' (used for filtering).
+- **Lung cancer**: Target outcome (int: 0 or 1).
 
 **Sample Row** (from data.xlsx):
 | Patient number | Sex | Date of Birth (yyyy-mm-dd) | Admission Date (yyyy-mm-dd) | APTT_Result | ... | Lung cancer |

@@ -6,6 +6,10 @@ def load_and_preprocess_data(input_file):
     # Read data from excel
     df = pd.read_excel(input_file)
     
+    # Convert columns to datetime format
+    df['Admission Date (yyyy-mm-dd)'] = pd.to_datetime(df['Admission Date (yyyy-mm-dd)'])
+    df['Date of Birth (yyyy-mm-dd)'] = pd.to_datetime(df['Date of Birth (yyyy-mm-dd)'])
+
     # Calculate age in years
     df['Age'] = (df['Admission Date (yyyy-mm-dd)'].dt.year - df['Date of Birth (yyyy-mm-dd)'].dt.year) - \
                 ((df['Admission Date (yyyy-mm-dd)'].dt.month < df['Date of Birth (yyyy-mm-dd)'].dt.month) | 

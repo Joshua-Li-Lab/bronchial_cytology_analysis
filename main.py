@@ -1,36 +1,86 @@
-from data_preprocessing import load_and_preprocess_data, split_and_export_data
-from statistical_analysis import create_dependency_table, perform_chi_square_tests, merge_and_assign_scores
-from scoring_combinations import generate_score_combinations, apply_combinations_to_data
-from summary_generation import generate_summary, generate_delta2_summary, merge_summaries
+"""
+main.py
+Orchestrates the full bronchial cytology scoring pipeline:
+  1. Data preprocessing and chi-square feature selection
+  2. Two-phase combinatorial model training
+  3. Internal validation on a held-out set
+"""
+
+import os
+from data_preprocessing import load_and_preprocess, split_data, run_chi_square_analysis
+from scoring_combinations import run_training
+from scoring_validation import run_validation
+
+# =========================================================================
+# Configuration
+# =========================================================================
+DATA_FILE = "data.xlsx"
+OUTPUT_DIR = "output"
+BASE_SCORE = 15
+HIGH_RISK_CUTOFF = 17
+LOW_RISK_CUTOFF = 8
+
 
 def main():
-    input_file = 'data.xlsx'
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    merged_summary_output = 'summary_output.xlsx'
-    
-    # Preprocess data
-    any_lung_df = load_and_preprocess_data(input_file)
-    train_df, val_df = split_and_export_data(any_lung_df)
-    
-    # Statistical analysis
-    dependency_df = create_dependency_table(any_lung_df)
-    results_df = perform_chi_square_tests(any_lung_df)
-    merged_df = merge_and_assign_scores(dependency_df, results_df)
-    ranked_results_df = merged_df.sort_values(by='Flagging', ascending=False).reset_index(drop=True)
-    
-    combination_df = generate_score_combinations(ranked_results_df)
-    
-    combination_result = apply_combinations_to_data(train_df, combination_df)
-    
-    summary_df = generate_summary(combination_result)
-    
-    delta2_df = generate_delta2_summary(summary_df)
+    # -----------------------------------------------------------------
+    # Step 1: Data Preprocessing
+    # -----------------------------------------------------------------
+    print("=" * 70)
+    print("STEP 1: Data Loading and Preprocessing")
+    print("=" * 70)
 
-    merged_summary = merge_summaries(summary_df, delta2_df)
-    
-    merged_summary.to_excel(merged_summary_output, index=False)
-    
-    print("Pipeline completed. Outputs saved in current directory.")
+    any_lung_df = load_and_preprocess(DATA_FILE)
+    print(f"Total C3/C4 samples: {len(any_lung_df)}")
+    print(f"Positive (ANY_LUNG=1): {any_lung_df['ANY_LUNG'].sum()}")
+
+    train_df, val_df = split_data(any_lung_df)
+    train_df.to_excel(os.path.join(OUTPUT_DIR, 'train_any_lung_df.xlsx'))
+    val_df.to_excel(os.path.join(OUTPUT_DIR, 'val_any_lung_df.xlsx'))
+    print(f"Training: {len(train_df)}, Validation: {len(val_df)}")
+
+    # Chi-square analysis is run on the full dataset
+    ranked_results_df = run_chi_square_analysis(any_lung_df)
+    print("Chi-square analysis complete.")
+
+    # -----------------------------------------------------------------
+    # Step 2: Model Training (Phase 1 + Phase 2)
+    # -----------------------------------------------------------------
+    print("\n" + "=" * 70)
+    print("STEP 2: Combinatorial Model Training")
+    print("=" * 70)
+
+    final_weights, best_weights_df, pipeline_summary = run_training(
+        ranked_results_df, train_df, OUTPUT_DIR
+    )
+
+    # Build validation-ready weights (non-zero entries only)
+    validation_weights = {k: v for k, v in final_weights.items()}
+
+    # -----------------------------------------------------------------
+    # Step 3: Internal Validation
+    # -----------------------------------------------------------------
+    print("\n" + "=" * 70)
+    print("STEP 3: Internal Validation")
+    print("=" * 70)
+
+    run_validation(
+        val_df, validation_weights,
+        base_score=BASE_SCORE,
+        high_cutoff=HIGH_RISK_CUTOFF,
+        low_cutoff=LOW_RISK_CUTOFF,
+        output_dir=OUTPUT_DIR
+    )
+
+    # -----------------------------------------------------------------
+    # Done
+    # -----------------------------------------------------------------
+    print("\n" + "=" * 70)
+    print("PIPELINE COMPLETE")
+    print(f"All output files saved to: {os.path.abspath(OUTPUT_DIR)}")
+    print("=" * 70)
+
 
 if __name__ == "__main__":
     main()

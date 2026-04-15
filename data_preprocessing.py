@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 COLUMNS_TO_KEEP = [
-    "HN Number", "Sex", "AGE55ormore",
+    "Number", "Sex", "AGE55ormore",
     "APTT_Flagging", "Albumin_Flagging", "Basophil, absolute_Flagging",
     "C-Reactive Protein_Flagging", "Creatinine_Flagging",
     "Eosinophil, absolute_Flagging", "Haemoglobin, Blood_Flagging",

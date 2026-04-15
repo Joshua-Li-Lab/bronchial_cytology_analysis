@@ -43,7 +43,7 @@ def compute_patient_scores(patient_df, combination_df):
     results_list = []
     for _, row in tqdm(patient_df.iterrows(), total=patient_df.shape[0],
                        desc="Computing patient scores"):
-        row_results = {'HN Number': row['HN Number'], 'ANY_LUNG': row['ANY_LUNG']}
+        row_results = {'Number': row['Number'], 'ANY_LUNG': row['ANY_LUNG']}
         for combo_idx in range(len(combination_df)):
             score = 0
             for col in patient_df.columns[2:]:

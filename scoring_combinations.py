@@ -38,15 +38,15 @@ def generate_combinations(score_df):
     return pd.DataFrame(results_list)
 
 
-def compute_patient_scores(patient_df, combination_df):
-    """Score every patient under every weight combination."""
+def compute_specimen_scores(specimen_df, combination_df):
+    """Score every specimen under every weight combination."""
     results_list = []
-    for _, row in tqdm(patient_df.iterrows(), total=patient_df.shape[0],
-                       desc="Computing patient scores"):
+    for _, row in tqdm(specimen_df.iterrows(), total=specimen_df.shape[0],
+                       desc="Computing specimen scores"):
         row_results = {'Number': row['Number'], 'ANY_LUNG': row['ANY_LUNG']}
         for combo_idx in range(len(combination_df)):
             score = 0
-            for col in patient_df.columns[2:]:
+            for col in specimen_df.columns[2:]:
                 comp_val = row[col]
                 comp_col = f'{col} comparison {comp_val}'
                 if comp_col in combination_df.columns:
@@ -84,7 +84,7 @@ def compute_summary(combination_result_df):
             result_summary.append({
                 'Combo': combo, 'Score': score,
                 'Cancer Cases': count_cancer, 'Normal Cases': count_normal,
-                'Total Patients': total_count, 'Cancer %': pct * 100,
+                'Total specimens': total_count, 'Cancer %': pct * 100,
                 'Cancer <= Score': cancer_leq, 'Cancer > Score': cancer_gt,
                 'Total <= Score': total_leq, 'Total > Score': total_gt,
                 'Cancer <= Score %': pct_leq * 100, 'Cancer > Score %': pct_gt * 100,
@@ -160,13 +160,13 @@ def extract_weights(combination_df, combo_idx):
 # =========================================================================
 
 def _run_phase(variables_df, train_df, output_dir, phase_name):
-    """Run a single phase: generate combinations, score patients, evaluate."""
+    """Run a single phase: generate combinations, score specimens, evaluate."""
     combination_df = generate_combinations(variables_df)
     combination_df.to_excel(os.path.join(output_dir, f'{phase_name}_combinations.xlsx'))
     print(f"{phase_name} combinations: {len(combination_df)}")
 
-    result_df = compute_patient_scores(train_df, combination_df)
-    result_df.to_excel(os.path.join(output_dir, f'{phase_name}_patient_scores.xlsx'))
+    result_df = compute_specimen_scores(train_df, combination_df)
+    result_df.to_excel(os.path.join(output_dir, f'{phase_name}_specimen_scores.xlsx'))
 
     summary_df = compute_summary(result_df)
     summary_df = sort_summary_by_combo(summary_df)

@@ -8,12 +8,11 @@ The pipeline expects input data in Excel format (.xlsx). The data should include
 - **Sex**: Gender ('M' or 'F').
 - **Date of Birth (yyyy-mm-dd)**: Birth date in YYYY-MM-DD format.
 - **Admission Date (yyyy-mm-dd)**: Admission date in YYYY-MM-DD format.
-- **Test Datetime (yyyy-mm-dd hh:mm)**: Test datetime in YYYY-MM-DD hh:mm format.
 - **Lab Result Columns** (floats, may include NaN): e.g., APTT_Result, Albumin_Result, Basophil, absolute_Result, C-Reactive Protein_Result, etc.
 - **Flagging Columns** (strings: 'H', 'L', or blank/NaN): e.g., APTT_Flagging, Albumin_Flagging, etc. (indicating high/low/normal).
 - **ANY_LUNG**: Target outcome (int: 0 or 1).
 
 **Sample Row** (from data.xlsx):
-| Number | Sex | Date of Birth (yyyy-mm-dd) | Admission Date (yyyy-mm-dd) | Test Datetime               | APTT_Result | ... | ANY_LUNG |
-|--------|-----|----------------------------|-----------------------------|-----------------------------|-------------|-----|----------|
-| 123    | F   | 1960-01-01                 | 2020-03-30                  | 2023-03-30 13:00            | 27.1        | ... | 0        |
+| Number | Sex | Date of Birth (yyyy-mm-dd) | Admission Date (yyyy-mm-dd) | APTT_Result | ... | ANY_LUNG |
+|--------|-----|----------------------------|-----------------------------|-------------|-----|----------|
+| 123    | F   | 1960-01-01                 | 2020-03-30                  | 27.1        | ... | 0        |

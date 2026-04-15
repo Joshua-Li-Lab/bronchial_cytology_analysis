@@ -1,7 +1,7 @@
 """
 scoring_validation.py
 Performs internal validation of the trained scoring model on a held-out set.
-Scores each patient using the final model weights, classifies into risk
+Scores each specimen using the final model weights, classifies into risk
 groups (high / intermediate / low), and evaluates stratification performance
 with chi-squared testing and score-level summary statistics.
 """
@@ -26,15 +26,15 @@ SCORE_COLUMNS = [
 ]
 
 
-def _score_patient(row, weights, base_score):
-    """Compute a single patient's risk score."""
+def _score_specimen(row, weights, base_score):
+    """Compute a single specimen's risk score."""
     score = base_score
     for col in SCORE_COLUMNS:
         try:
-            patient_val = int(row[col])
+            specimen_val = int(row[col])
         except (ValueError, TypeError):
             continue
-        key = (col, patient_val)
+        key = (col, specimen_val)
         if key in weights:
             score += weights[key]
     return score
@@ -50,14 +50,14 @@ def _classify_risk(score, high_cutoff, low_cutoff):
 
 
 def run_validation(val_df, weights, base_score, high_cutoff, low_cutoff, output_dir):
-    """Score validation patients, classify risk groups, and save results.
+    """Score validation specimens, classify risk groups, and save results.
 
     Args:
         val_df: Validation DataFrame (encoded, same format as training).
         weights: dict of (variable, flag_value) → weight.
-        base_score: Integer added to every patient's raw score.
-        high_cutoff: Score above which a patient is High-Risk.
-        low_cutoff: Score at or below which a patient is Low-Risk.
+        base_score: Integer added to every specimen's raw score.
+        high_cutoff: Score above which a specimen is High-Risk.
+        low_cutoff: Score at or below which a specimen is Low-Risk.
         output_dir: Directory for output files.
     """
     os.makedirs(output_dir, exist_ok=True)
@@ -69,10 +69,10 @@ def run_validation(val_df, weights, base_score, high_cutoff, low_cutoff, output_
     print(f"  Positives (cancer): {int(val_df['ANY_LUNG'].sum())}")
     print(f"  Negatives (normal): {int((val_df['ANY_LUNG'] == 0).sum())}")
 
-    # --- Score patients ---
+    # --- Score specimens ---
     val_scored = val_df.copy()
     val_scored['Risk_Score'] = val_scored.apply(
-        lambda row: _score_patient(row, weights, base_score), axis=1
+        lambda row: _score_specimen(row, weights, base_score), axis=1
     )
 
     print(f"\nScore range:  {val_scored['Risk_Score'].min()} to {val_scored['Risk_Score'].max()}")
@@ -163,7 +163,7 @@ def run_validation(val_df, weights, base_score, high_cutoff, low_cutoff, output_
 
     # --- Save outputs ---
     val_scored.to_excel(
-        os.path.join(output_dir, 'validation_scored_patients.xlsx'), index=False)
+        os.path.join(output_dir, 'validation_scored_specimens.xlsx'), index=False)
     summary_df.to_excel(
         os.path.join(output_dir, 'validation_summary_by_score.xlsx'), index=False)
 
@@ -204,7 +204,7 @@ def run_validation(val_df, weights, base_score, high_cutoff, low_cutoff, output_
     weights_df = pd.DataFrame(weight_rows)
     weights_df.loc[len(weights_df)] = {
         'Variable': '(BASE_SCORE)', 'Flag_Value': '-',
-        'Flag_Meaning': 'All patients', 'Weight': base_score
+        'Flag_Meaning': 'All specimens', 'Weight': base_score
     }
     weights_df.to_excel(
         os.path.join(output_dir, 'validation_weights_used.xlsx'), index=False)

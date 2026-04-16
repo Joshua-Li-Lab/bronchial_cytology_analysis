@@ -1,24 +1,19 @@
 """
 main.py
-Orchestrates the full bronchial cytology scoring pipeline:
+Orchestrates the bronchial cytology scoring pipeline:
   1. Data preprocessing and chi-square feature selection
   2. Two-phase combinatorial model training
-  3. Internal validation on a held-out set
 """
 
 import os
 from data_preprocessing import load_and_preprocess, split_data, run_chi_square_analysis
 from scoring_combinations import run_training
-from scoring_validation import run_validation
 
 # =========================================================================
 # Configuration
 # =========================================================================
 DATA_FILE = "data.xlsx"
 OUTPUT_DIR = "output"
-BASE_SCORE = 15
-HIGH_RISK_CUTOFF = 17
-LOW_RISK_CUTOFF = 8
 
 
 def main():
@@ -53,24 +48,6 @@ def main():
 
     final_weights, best_weights_df, pipeline_summary = run_training(
         ranked_results_df, train_df, OUTPUT_DIR
-    )
-
-    # Build validation-ready weights (non-zero entries only)
-    validation_weights = {k: v for k, v in final_weights.items()}
-
-    # -----------------------------------------------------------------
-    # Step 3: Internal Validation
-    # -----------------------------------------------------------------
-    print("\n" + "=" * 70)
-    print("STEP 3: Internal Validation")
-    print("=" * 70)
-
-    run_validation(
-        val_df, validation_weights,
-        base_score=BASE_SCORE,
-        high_cutoff=HIGH_RISK_CUTOFF,
-        low_cutoff=LOW_RISK_CUTOFF,
-        output_dir=OUTPUT_DIR
     )
 
     # -----------------------------------------------------------------

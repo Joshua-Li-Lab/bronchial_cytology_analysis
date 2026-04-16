@@ -108,14 +108,6 @@ def run_chi_square_analysis(any_lung_df):
             })
     dependency_df = pd.DataFrame(dependency_results)
 
-    # Add missing CRP Low row
-    new_row = pd.DataFrame({
-        "Flagging": ["C-Reactive Protein_Flagging"], "Value": [1],
-        "Count_LUNG_0": [0], "Count_LUNG_1": [0],
-        "Percentage_LUNG_0": [0], "Percentage_LUNG_1": [0]
-    })
-    dependency_df = pd.concat([dependency_df, new_row], ignore_index=True)
-
     # Compute direction: 1 if cancer% > Normal cancer%, else 0
     dependency_df['Direction'] = 0
     for flagging in dependency_df['Flagging'].unique():
